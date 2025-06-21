@@ -30,7 +30,8 @@ export function LeadForm({ action, initialData }: LeadFormProps) {
 
   useEffect(() => {
     if (state?.success) {
-      queryClient.setQueryData(["lead", initialData.id], () => state);
+      queryClient.setQueryData(["lead", state.data?.id], () => state);
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
     }
   }, [state]);
 
