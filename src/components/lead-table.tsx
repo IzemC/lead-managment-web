@@ -26,12 +26,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 interface LeadTableProps {
   data: LeadListResponse;
+  filters: any;
   page: number;
   isLoading: boolean;
 }
 
 export function LeadTable({
   page,
+  filters,
   data: initialData,
   isLoading,
 }: LeadTableProps) {
@@ -39,17 +41,20 @@ export function LeadTable({
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
-  const { data } = useLeadsQuery(searchParams.get("page") || "1", initialData);
+  const { data } = useLeadsQuery(page, initialData, filters);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteLead(id);
 
-      queryClient.setQueryData(["leads"], (prev: any) => ({
-        ...prev,
-        data: prev.data?.filter((lead: any) => lead.id !== id),
-        total: prev.pagination?.total - 1,
-      }));
+      queryClient.setQueryData(
+        ["leads", page, filters ? JSON.stringify(filters) : null],
+        (prev: any) => ({
+          ...prev,
+          data: prev?.data?.filter((lead: any) => lead.id !== id),
+          total: prev?.pagination?.total - 1,
+        })
+      );
     } catch (error) {
       console.error("Failed to delete lead:", error);
     }

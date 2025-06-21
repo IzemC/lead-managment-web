@@ -172,7 +172,12 @@ export function LeadList({ initialData }: { initialData?: LeadListResponse }) {
           ))}
         </div>
       ) : (
-        <LeadTable data={data} page={page} isLoading={isLoading} />
+        <LeadTable
+          data={data}
+          filters={localFilters}
+          page={page}
+          isLoading={isLoading}
+        />
       )}
     </div>
   );

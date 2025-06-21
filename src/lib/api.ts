@@ -14,7 +14,7 @@ type Error = {
 };
 
 export const getLeads = async (
-  page: number | string = 1,
+  page: number = 1,
   filters?: { source?: string; startDate?: string; endDate?: string }
 ): Promise<LeadListResponse> => {
   let url = `${API_URL}/leads?page=${page}`;
