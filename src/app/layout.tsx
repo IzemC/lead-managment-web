@@ -1,3 +1,4 @@
+import { Providers } from "@/app/providers";
 import { MainNav } from "@/components/main-nav";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -28,12 +29,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex min-h-screen w-full">
-          <MainNav />
-          <div className="flex flex-col flex-1 w-full overflow-x-auto">
-            <main className="flex-1 overflow-auto">{children}</main>
+        <Providers>
+          <div className="flex min-h-screen w-full">
+            <MainNav />
+            <div className="flex flex-col flex-1 w-full overflow-x-auto">
+              <main className="flex-1 overflow-auto">{children}</main>
+            </div>
           </div>
-        </div>
+        </Providers>
       </body>
     </html>
   );

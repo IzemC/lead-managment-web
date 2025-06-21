@@ -15,46 +15,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLeadsQuery } from "@/hooks/use-leads-query";
 import { cn } from "@/lib/utils";
-import { LeadListResponse } from "@/types/leads";
+import { type LeadListResponse } from "@/types/leads";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-interface LeadListProps {
-  initialData: LeadListResponse;
-  initialFilters: {
-    source?: string;
-    startDate?: string;
-    endDate?: string;
-  };
-}
-
-export function LeadList({ initialData, initialFilters }: LeadListProps) {
+export function LeadList({ initialData }: { initialData: LeadListResponse }) {
   const router = useRouter();
-  const [source, setSource] = useState(initialFilters.source || "");
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    initialFilters.startDate ? new Date(initialFilters.startDate) : undefined
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    initialFilters.endDate ? new Date(initialFilters.endDate) : undefined
-  );
+  const searchParams = useSearchParams();
+
+  const page = parseInt(searchParams.get("page") || "1");
+  const source = searchParams.get("source") || "";
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
+
+  const [localFilters, setLocalFilters] = useState({
+    source,
+    startDate: startDate ? new Date(startDate) : undefined,
+    endDate: endDate ? new Date(endDate) : undefined,
+  });
+
+  const { data, isLoading } = useLeadsQuery(page, {
+    source,
+    startDate,
+    endDate,
+  });
 
   const applyFilters = () => {
     const params = new URLSearchParams();
-    if (source) params.set("source", source);
-    if (startDate) params.set("startDate", startDate.toISOString());
-    if (endDate) params.set("endDate", endDate.toISOString());
+    if (localFilters.source) params.set("source", localFilters.source);
+    if (localFilters.startDate)
+      params.set("startDate", localFilters.startDate.toISOString());
+    if (localFilters.endDate)
+      params.set("endDate", localFilters.endDate.toISOString());
     params.set("page", "1");
     router.push(`/leads?${params.toString()}`);
   };
 
   const resetFilters = () => {
-    setSource("");
-    setStartDate(undefined);
-    setEndDate(undefined);
-    router.push("/leads");
+    setLocalFilters({ source: "", startDate: undefined, endDate: undefined });
+    router.push(`/leads?page=1`);
   };
 
   return (
@@ -64,7 +68,12 @@ export function LeadList({ initialData, initialFilters }: LeadListProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium">Source</label>
-            <Select value={source} onValueChange={setSource}>
+            <Select
+              value={localFilters.source}
+              onValueChange={(value) =>
+                setLocalFilters((prev) => ({ ...prev, source: value }))
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="All Sources" />
               </SelectTrigger>
@@ -82,15 +91,15 @@ export function LeadList({ initialData, initialFilters }: LeadListProps) {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
+                  variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
+                    !localFilters.startDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? (
-                    format(startDate, "PPP")
+                  {localFilters.startDate ? (
+                    format(localFilters.startDate, "PPP")
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -99,8 +108,10 @@ export function LeadList({ initialData, initialFilters }: LeadListProps) {
               <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
+                  selected={localFilters.startDate}
+                  onSelect={(date) =>
+                    setLocalFilters((prev) => ({ ...prev, startDate: date }))
+                  }
                   initialFocus
                 />
               </PopoverContent>
@@ -112,40 +123,61 @@ export function LeadList({ initialData, initialFilters }: LeadListProps) {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
+                  variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
+                    !localFilters.endDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  {localFilters.endDate ? (
+                    format(localFilters.endDate, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
                 <Calendar
                   mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
+                  selected={localFilters.endDate}
+                  onSelect={(date) =>
+                    setLocalFilters((prev) => ({ ...prev, endDate: date }))
+                  }
                 />
               </PopoverContent>
             </Popover>
           </div>
 
           <div className="flex gap-2 md:row-start-2 col-span-full justify-self-end">
-            <Button onClick={applyFilters}>Apply</Button>
-            <Button variant="outline" onClick={resetFilters}>
+            <Button onClick={applyFilters} disabled={isLoading}>
+              Apply Filters
+            </Button>
+            <Button
+              variant="outline"
+              onClick={resetFilters}
+              disabled={isLoading}
+            >
               Reset
             </Button>
           </div>
         </div>
       </div>
 
-      <LeadTable
-        initialData={initialData}
-        page={initialData.pagination?.page || 1}
-        limit={initialData.pagination?.limit || 10}
-      />
+      {isLoading && !data ? (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </div>
+      ) : (
+        <LeadTable
+          data={data || initialData}
+          page={page}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }
