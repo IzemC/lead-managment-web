@@ -17,12 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLeadsQuery } from "@/hooks/use-leads-query";
 import { deleteLead } from "@/lib/api";
 import { LeadListResponse } from "@/types/leads";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
 
 interface LeadTableProps {
   data: LeadListResponse;
@@ -39,18 +39,17 @@ export function LeadTable({
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
-  const [data, setData] = useState<any>(initialData);
+  const { data } = useLeadsQuery(searchParams.get("page") || "1", initialData);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteLead(id);
 
-      setData((prev: any) => ({
+      queryClient.setQueryData(["leads"], (prev: any) => ({
         ...prev,
         data: prev.data?.filter((lead: any) => lead.id !== id),
         total: prev.pagination?.total - 1,
       }));
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
     } catch (error) {
       console.error("Failed to delete lead:", error);
     }
