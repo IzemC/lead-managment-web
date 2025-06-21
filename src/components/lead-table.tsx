@@ -17,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLeadsQuery } from "@/hooks/use-leads-query";
 import { deleteLead } from "@/lib/api";
 import { LeadListResponse } from "@/types/leads";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,17 +30,10 @@ interface LeadTableProps {
   isLoading: boolean;
 }
 
-export function LeadTable({
-  page,
-  filters,
-  data: initialData,
-  isLoading,
-}: LeadTableProps) {
+export function LeadTable({ page, filters, data, isLoading }: LeadTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-
-  const { data } = useLeadsQuery(page, initialData, filters);
 
   const handleDelete = async (id: string) => {
     try {

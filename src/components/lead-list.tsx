@@ -39,11 +39,13 @@ export function LeadList({ initialData }: { initialData?: LeadListResponse }) {
     endDate: endDate ? new Date(endDate) : undefined,
   });
 
-  const { data, isLoading } = useLeadsQuery(page, initialData, {
+  const filters = {
     source,
     startDate,
     endDate,
-  });
+  };
+
+  const { data, isLoading } = useLeadsQuery(page, initialData, filters);
 
   const applyFilters = () => {
     const params = new URLSearchParams();
@@ -174,7 +176,7 @@ export function LeadList({ initialData }: { initialData?: LeadListResponse }) {
       ) : (
         <LeadTable
           data={data}
-          filters={localFilters}
+          filters={filters}
           page={page}
           isLoading={isLoading}
         />
