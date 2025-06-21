@@ -19,7 +19,12 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
     endDate,
   };
 
-  const leadsData = await getLeads(parseInt(page || "1"), filters);
+  let leadsData;
+  try {
+    leadsData = await getLeads(parseInt(page || "1"), filters);
+  } catch (error) {
+    console.log("Error while fetching leads", error);
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

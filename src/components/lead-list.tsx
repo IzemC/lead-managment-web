@@ -24,7 +24,7 @@ import { CalendarIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export function LeadList({ initialData }: { initialData: LeadListResponse }) {
+export function LeadList({ initialData }: { initialData?: LeadListResponse }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -39,7 +39,7 @@ export function LeadList({ initialData }: { initialData: LeadListResponse }) {
     endDate: endDate ? new Date(endDate) : undefined,
   });
 
-  const { data, isLoading } = useLeadsQuery(page, {
+  const { data, isLoading } = useLeadsQuery(page, initialData, {
     source,
     startDate,
     endDate,
@@ -172,11 +172,7 @@ export function LeadList({ initialData }: { initialData: LeadListResponse }) {
           ))}
         </div>
       ) : (
-        <LeadTable
-          data={data || initialData}
-          page={page}
-          isLoading={isLoading}
-        />
+        <LeadTable data={data} page={page} isLoading={isLoading} />
       )}
     </div>
   );
