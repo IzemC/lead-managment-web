@@ -43,8 +43,7 @@ export function LeadTable({
 
   const handleDelete = async (id: string) => {
     try {
-      const t = await deleteLead(id);
-      console.log(t);
+      await deleteLead(id);
 
       setData((prev: any) => ({
         ...prev,
@@ -79,14 +78,14 @@ export function LeadTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.data?.length === 0 ? (
+            {data?.data?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
                   No results found
                 </TableCell>
               </TableRow>
             ) : (
-              data.data?.map((lead: any) => (
+              data?.data?.map((lead: any) => (
                 <TableRow key={lead.id}>
                   <TableCell>{lead.name}</TableCell>
                   <TableCell>{lead.email}</TableCell>
@@ -131,7 +130,7 @@ export function LeadTable({
         </Table>
       </div>
 
-      {data.data?.length > 0 && (
+      {data?.data?.length > 0 && (
         <Pagination>
           <PaginationContent>
             <PaginationItem>
@@ -146,7 +145,7 @@ export function LeadTable({
             </PaginationItem>
             <PaginationItem>
               <span className="px-4">
-                Page {page} of {Math.max(1, data.pagination?.pages)}
+                Page {page} of {Math.max(1, data?.pagination?.pages)}
               </span>
             </PaginationItem>
             <PaginationItem>
@@ -154,10 +153,10 @@ export function LeadTable({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (page < data.pagination?.pages && !isLoading)
+                  if (page < data?.pagination?.pages && !isLoading)
                     handlePageChange(page + 1);
                 }}
-                isActive={page < data.pagination?.pages && !isLoading}
+                isActive={page < data?.pagination?.pages && !isLoading}
               />
             </PaginationItem>
           </PaginationContent>
